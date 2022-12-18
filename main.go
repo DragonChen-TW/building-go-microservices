@@ -1,10 +1,11 @@
 package main
 
 import (
-	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+
+	"github.com/dragonchen-tw/building-go-microservices/pkg/handlers"
 )
 
 // Author:	DragonChen https://github.com/dragonchen-tw/
@@ -12,22 +13,14 @@ import (
 // Date:	2022/12/18
 
 func main() {
-	http.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
-		log.Println("Hello, World!")
+	l := log.New(os.Stdout, "[product-api] ", log.LstdFlags)
+	hh := handlers.NewHello(l)
+	gh := handlers.NewGoodbye(l)
 
-		data, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			http.Error(rw, "Got data-reading error.", http.StatusBadRequest)
-			return
-		}
-		// Check the input data
-		// log.Printf("Data: %s\n", data)
+	sm := http.NewServeMux()
+	// our HelloHandler fulfill the interface of Handler
+	sm.Handle("/", hh)
+	sm.Handle("/goodbye", gh)
 
-		fmt.Fprintf(rw, "Hello %s.\n", data)
-	})
-	http.HandleFunc("/goodbye", func(http.ResponseWriter, *http.Request) {
-		log.Println("Goodbye, World!")
-	})
-
-	http.ListenAndServe("127.0.0.1:9090", nil)
+	http.ListenAndServe("127.0.0.1:9090", sm)
 }

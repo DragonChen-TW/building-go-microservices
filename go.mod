@@ -1,4 +1,4 @@
-module github.com/building-go-microservices
+module github.com/dragonchen-tw/building-go-microservices
 
 go 1.18
 
