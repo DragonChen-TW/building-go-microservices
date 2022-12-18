@@ -1,0 +1,7 @@
+[
+  {
+    "method": "GET",
+    "path": "/products",
+    "name": "get-products"
+  }
+]

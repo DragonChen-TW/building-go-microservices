@@ -1,14 +1,12 @@
 package main
 
 import (
-	"context"
-	"log"
-	"net/http"
-	"os"
-	"os/signal"
+	"encoding/json"
+	"io/ioutil"
 	"time"
 
 	"github.com/dragonchen-tw/building-go-microservices/pkg/handlers"
+	"github.com/labstack/echo/v4"
 )
 
 // Author:	DragonChen https://github.com/dragonchen-tw/
@@ -16,35 +14,20 @@ import (
 // Date:	2022/12/18
 
 func main() {
-	l := log.New(os.Stdout, "[product-api] ", log.LstdFlags)
-	ph := handlers.NewProducts(l)
+	// l := log.New(os.Stdout, "[product-api] ", log.LstdFlags)
 
-	sm := http.NewServeMux()
-	sm.Handle("/", ph)
+	e := echo.New()
+	e.Server.ReadTimeout = 1 * time.Second
+	e.Server.WriteTimeout = 1 * time.Second
+	e.Server.IdleTimeout = 120 * time.Second
 
-	s := http.Server{
-		Addr:         "127.0.0.1:9090",
-		Handler:      sm,
-		IdleTimeout:  120 * time.Second,
-		ReadTimeout:  1 * time.Second,
-		WriteTimeout: 1 * time.Second,
-	}
+	ph := handlers.NewProducts(e.StdLogger)
 
-	go func() {
-		err := s.ListenAndServe()
-		if err != nil {
-			l.Fatal(err)
-		}
-	}()
+	g := e.Group("/products")
+	g.GET("", ph.GetProducts).Name = "get-products"
 
-	sigChan := make(chan os.Signal)
-	signal.Notify(sigChan, os.Interrupt)
-	signal.Notify(sigChan, os.Kill)
+	data, _ := json.MarshalIndent(e.Routes(), "", "  ")
+	ioutil.WriteFile("routes.json", data, 0644)
 
-	// var sig os.Signal
-	sig := <-sigChan
-	l.Println("Recieved terminate, graceful shutdown", sig)
-
-	tc, _ := context.WithTimeout(context.Background(), 30*time.Second)
-	s.Shutdown(tc)
+	e.Logger.Fatal(e.Start("127.0.0.1:9090"))
 }
