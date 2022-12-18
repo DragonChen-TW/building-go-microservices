@@ -12,9 +12,7 @@ type Hello struct {
 }
 
 func NewHello(l *log.Logger) *Hello {
-	return &Hello{
-		l: l,
-	}
+	return &Hello{l}
 }
 
 func (h *Hello) ServeHTTP(rw http.ResponseWriter, r *http.Request) {

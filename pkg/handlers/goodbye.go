@@ -10,9 +10,7 @@ type Goodbye struct {
 }
 
 func NewGoodbye(l *log.Logger) *Goodbye {
-	return &Goodbye{
-		l: l,
-	}
+	return &Goodbye{l}
 }
 
 func (h *Goodbye) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
