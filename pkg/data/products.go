@@ -18,6 +18,10 @@ type Product struct {
 	DeletedOn   string  `json:"-"`
 }
 
+func NewProduct() *Product {
+	return &Product{}
+}
+
 func (p *Product) FromJSON(r io.Reader) error {
 	dec := json.NewDecoder(r)
 	return dec.Decode(p)

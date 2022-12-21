@@ -1,6 +1,16 @@
 [
   {
+    "method": "PUT",
+    "path": "/products/:id",
+    "name": "get-products"
+  },
+  {
     "method": "GET",
+    "path": "/products",
+    "name": "get-products"
+  },
+  {
+    "method": "POST",
     "path": "/products",
     "name": "get-products"
   }

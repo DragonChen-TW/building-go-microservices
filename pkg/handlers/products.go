@@ -3,6 +3,7 @@ package handlers
 import (
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/dragonchen-tw/building-go-microservices/pkg/data"
 	"github.com/labstack/echo/v4"
@@ -17,42 +18,53 @@ func NewProducts(l *log.Logger) *Products {
 }
 
 func (p *Products) GetProducts(c echo.Context) error {
-	// curl  localhost:9090 | jp
+	// curl localhost:9090/products | jp
 	p.l.Println("Handle GET products")
 
 	productList := data.GetProducts()
 	return c.JSON(http.StatusOK, productList)
 }
 
-// func (p *Products) CreateProduct(rw http.ResponseWriter, r *http.Request) {
-// 	// curl  localhost:9090 -X POST -d '{"id": 5, "name": "iPad Air 5", "desc": "A new product", "price": 15000, "sku": "test123"}'
-// 	p.l.Println("Handle POST products")
+func (p *Products) CreateProduct(c echo.Context) error {
+	/*
+		curl localhost:9090/products -X POST \
+		-H 'Content-Type: application/json' \
+		-d '{"id": 5, "name": "iPad Air 5", "desc": "A new product", "price": 15000, "sku": "test123"}'
+	*/
+	p.l.Println("Handle POST products")
 
-// 	newProduct := &data.Product{}
-// 	if err := newProduct.FromJSON(r.Body); err != nil {
-// 		http.Error(rw, "Loading error from the JSON of product.", http.StatusBadRequest)
-// 		return
-// 	}
+	newProduct := data.NewProduct()
+	c.Bind(newProduct)
+	p.l.Println("new", newProduct)
 
-// 	data.CreateProduct(newProduct)
-// }
+	data.CreateProduct(newProduct)
+	return nil
+}
 
-// func (p *Products) UpdateProduct(id int, rw http.ResponseWriter, r *http.Request) {
-// 	// curl  localhost:9090 -X POST -d '{"id": 5, "name": "iPad Air 5", "desc": "A new product", "price": 15000, "sku": "test123"}'
-// 	p.l.Println("Handle PUT products")
+func (p *Products) UpdateProduct(c echo.Context) error {
+	/*
+		curl localhost:9090/products/3 -X PUT \
+		-H 'Content-Type: application/json' \
+		-d '{"name": "iPad Air 5", "desc": "Amazing iPad!!!!!!", "price": 12000, "sku": "test123"}'
+	*/
+	p.l.Println("Handle PUT products")
 
-// 	newProduct := &data.Product{}
-// 	if err := newProduct.FromJSON(r.Body); err != nil {
-// 		http.Error(rw, "Loading error from the JSON of product.", http.StatusBadRequest)
-// 		return
-// 	}
+	newProduct := &data.Product{}
+	c.Bind(newProduct)
+	p.l.Println("update", newProduct)
 
-// 	err := data.UpdateProduct(id, newProduct)
-// 	if err == data.ErrProductNotFound {
-// 		http.Error(rw, "Product not found by given ID", http.StatusNotFound)
-// 		return
-// 	} else if err != nil {
-// 		http.Error(rw, "Product not found", http.StatusInternalServerError)
-// 		return
-// 	}
-// }
+	idParam := c.Param("id")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err)
+	}
+
+	err = data.UpdateProduct(id, newProduct)
+	if err == data.ErrProductNotFound {
+		c.JSON(http.StatusNotFound, "Product not found by given ID")
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, "Product not found")
+	}
+
+	return nil
+}
