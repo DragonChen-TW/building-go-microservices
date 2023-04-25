@@ -25,8 +25,14 @@ func main() {
 
 	g := e.Group("/products")
 	g.GET("", ph.GetProducts).Name = "get-products"
-	g.POST("", ph.CreateProduct).Name = "get-products"
-	g.PUT("/:id", ph.UpdateProduct).Name = "get-products"
+	g.POST(
+		"", ph.CreateProduct,
+		// handlers.ValidateNewProductMiddleware,
+	).Name = "create-product"
+	g.PUT(
+		"/:id", ph.UpdateProduct,
+		// handlers.ValidateNewProductMiddleware,
+	).Name = "update-product"
 
 	data, _ := json.MarshalIndent(e.Routes(), "", "  ")
 	ioutil.WriteFile("routes.json", data, 0644)
